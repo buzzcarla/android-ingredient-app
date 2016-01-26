@@ -16,20 +16,17 @@ import android.widget.TextView;
 
 import org.opencv.android.OpenCVLoader;
 import org.opencv.android.Utils;
-import org.opencv.core.Core;
-import org.opencv.core.CvType;
 import org.opencv.core.Mat;
-import org.opencv.core.Size;
-import org.opencv.imgproc.Imgproc;
+
+/* The main activity. Handles all I/O.
+*/
 
 public class MainActivity extends AppCompatActivity {
 
-    ImageView iv;
     private Mat mGray;
-    //private Mat convertedImg;
     private Bitmap bp;
-    private Bitmap bmpMonochrome;
 
+    /*Initialize OpenCV*/
     static {
         if(!OpenCVLoader.initDebug()) {
             Log.i("opencv", "opencv initialization failed");
@@ -46,6 +43,7 @@ public class MainActivity extends AppCompatActivity {
 
         Button b1 = (Button) this.findViewById(R.id.camButton);
 
+        /*Load Tesseract data to phone storage*/
         SharedPreferences settings = getSharedPreferences("MyPrefs", 0); // Get preferences file (0 = no option flags set)
         boolean firstRun = settings.getBoolean("firstRun", true);
 
@@ -74,6 +72,7 @@ public class MainActivity extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, data);
 
         TessProcess startOCR = new TessProcess();
+        openCVProcess startOpenCV = new openCVProcess();
         //Did the user choose OK? If so, tne code below will execute
         //if (resultCode == RESULT_OK) {
         if (requestCode == 0) {
@@ -84,9 +83,12 @@ public class MainActivity extends AppCompatActivity {
             //iv.setImageBitmap(bp);
             /*Cabs Code*/
             //convertedImg = new Mat();
-            toGrayscale();
-            gaussianBlur();
-            binarize();
+            mGray = startOpenCV.toGrayscale(bp);
+            mGray = startOpenCV.gaussianBlur(mGray);
+            mGray = startOpenCV.binarize(mGray);
+            Utils.matToBitmap(mGray, bp);
+            ImageView iv2= (ImageView)findViewById(R.id.imageView1);
+            iv2.setImageBitmap(bp);
             String txt = startOCR.tessProcess(bp);
             TextView my_out_1 = (TextView)findViewById(R.id.my_out);
             my_out_1.setText(txt);
@@ -97,30 +99,6 @@ public class MainActivity extends AppCompatActivity {
             TextView txt = (TextView) this.findViewById(R.id.textview);
             txt.setText("Hello");
         }
-    }
-
-    public void toGrayscale() {
-        //convert to grayscale
-        //mGray = new Mat (myImg.rows(), myImg.cols(), CvType.CV_8UC1, new Scalar(0));
-        mGray = new Mat(bp.getWidth(), bp.getHeight(), CvType.CV_8UC1);
-        Utils.bitmapToMat(bp, mGray);
-        Imgproc.cvtColor(mGray, mGray, Imgproc.COLOR_RGB2GRAY);
-    }
-
-    public void gaussianBlur() {
-        //apply gaussian blur
-        org.opencv.core.Size s = new Size(3,3);
-        Imgproc.GaussianBlur(mGray, mGray, s, 0, 0, Core.BORDER_DEFAULT);
-    }
-
-    public void binarize() {
-        //Imgproc.adaptiveThreshold(mGray, mGray, 255, Imgproc.ADAPTIVE_THRESH_MEAN_C, Imgproc.THRESH_BINARY_INV, 5, 4);
-        Imgproc.threshold(mGray, mGray, 0, 255, Imgproc.THRESH_OTSU);
-
-        //show bitmap in image view
-        Utils.matToBitmap(mGray, bp);
-        ImageView iv2= (ImageView)findViewById(R.id.imageView1);
-        iv2.setImageBitmap(bp);
     }
 
     @Override

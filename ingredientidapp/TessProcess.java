@@ -6,6 +6,11 @@ import android.os.Environment;
 
 import com.googlecode.tesseract.android.TessBaseAPI;
 
+/**
+ * This is the the background OCR Process
+ * Accepts Bitmap from the openCV processed image and returns the read text
+ **/
+
 final class TessProcess extends Activity{
 
 	    protected String tessProcess(Bitmap bMap){

@@ -11,6 +11,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+/**
+ * This background function transfers tessdata from assets folder to the phone storage  
+ * It only runs during the first launch of the app
+ **/
+
 final class InitTess extends MainActivity {
 
     private static final String TAG = "";
