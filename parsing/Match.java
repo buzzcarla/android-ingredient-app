@@ -3,7 +3,6 @@ package com.example.kelvs.parsing;
 import java.util.ArrayList;
 import java.util.List;
 
-
 public class Match {
 
     private String name;

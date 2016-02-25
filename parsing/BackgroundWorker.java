@@ -41,9 +41,11 @@ public class BackgroundWorker extends AsyncTask<Void, Void, Void> {
 
         // sample list of user ingredients
 
-        Log.d("MANA", "b");
+        Log.d("TAG","b");
+
         IngredCounter ingredCounter = new IngredCounter();
         ingredCounter.getAllMatches(keyword);
+        ingredCounter.showCountedIngredients();
 
         return null;
     }

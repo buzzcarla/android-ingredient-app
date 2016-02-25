@@ -6,55 +6,14 @@ import org.json.JSONObject;
 import java.util.List;
 import okhttp3.HttpUrl;
 
-
 public class ParseYummly extends ParseSuper {
+
+    // DECLARING ID AND KEY
 
     String app_id = "f91a37f4";
     String api_key = "8d623bbb90e252baa99619a82a96e659";
 
-    /*
-    public String getSourceURL(String getRecipeURL){
-
-        System.out.println("GET URL:" + getRecipeURL);
-        Request request = new Request.Builder()
-                .url(getRecipeURL)
-                .build();
-
-        OkHttpClient client = new OkHttpClient();
-
-        try {
-            Response response = client.newCall(request).execute();
-
-            if (response != null) try {
-
-                JSONObject jsonResponse = new JSONObject(response.body().string()).getJSONObject("source");
-
-                String sourceURL = jsonResponse.getString("sourceRecipeUrl");
-                System.out.println(sourceURL);
-
-                return sourceURL;
-
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        return null;
-    }
-
-
-    public String setGetRecipeURL(String recipeID){
-
-        HttpUrl.Builder urlBuilder = HttpUrl.parse(
-                "https://api.yummly.com/v1/api/recipe/" + recipeID +
-                        "?_app_id=" + this.app_id + "&_app_key=" + api_key).newBuilder();
-
-        String requestURL = urlBuilder.build().toString();
-        return requestURL;
-    }
-    */
+    // METHOD DECLARATIONS
 
     @Override
     public final String setRequestURL(String keyword) {
@@ -67,12 +26,10 @@ public class ParseYummly extends ParseSuper {
         urlBuilder.addQueryParameter("q", keyword);
 
         //set # of results
-        urlBuilder.addQueryParameter("maxResult", "5");
+        urlBuilder.addQueryParameter("maxResult", "10");
 
-        String requestURL = urlBuilder.build().toString();
-        System.out.println(requestURL + "   1");
+        return urlBuilder.build().toString();
 
-        return requestURL;
     }
 
     /* JSON PARSING */
@@ -87,7 +44,10 @@ public class ParseYummly extends ParseSuper {
             // if matches are found
             if (matchesArr != null) {
 
-                for(int i = 0; (i < matchesArr.length()); i++) {
+                for(int i = 0; i < matchesArr.length(); i++) {
+
+                    if(matchCountTotal == 5)
+                        break;
 
                     JSONObject matchIndex = matchesArr.getJSONObject(i);
 
@@ -95,12 +55,6 @@ public class ParseYummly extends ParseSuper {
 
                     // filtering recipeNames
                     if(matchIndex.getString("recipeName").toLowerCase().contains(keyword)) {
-
-                        /*
-                        //set URL for GET Recipe
-                        String getRecipeURL = setGetRecipeURL(matchIndex.getString("id"));
-                        String sourceURL = getSourceURL(getRecipeURL);
-                        */
 
                         Match match = new Match();
                         match.setName(matchIndex.getString("recipeName"));
@@ -114,6 +68,8 @@ public class ParseYummly extends ParseSuper {
 
                         this.matchCount++;
                         this.matches.add(match);
+
+                        matchCountTotal++;
                     }
                 }
 

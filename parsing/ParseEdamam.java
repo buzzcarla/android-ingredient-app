@@ -24,9 +24,8 @@ public class ParseEdamam extends ParseSuper {
                 urlBuilder.addQueryParameter("app_key", key);
                 urlBuilder.addQueryParameter("to", "10");
 
-                String requestURL = urlBuilder.build().toString();
+                return urlBuilder.build().toString();
 
-                return requestURL;
             }
 
             @Override
@@ -41,12 +40,15 @@ public class ParseEdamam extends ParseSuper {
 
                             for (int i = 0; i < matchesArr.length(); i++) {
 
+                                if(matchCountTotal == 5)
+                                    break;
+
                                 JSONObject jsonObject = matchesArr.getJSONObject(i);
                                 JSONObject matchIndex = jsonObject.getJSONObject("recipe");
 
                                 if(matchIndex.getString("label").toLowerCase().contains(keyword)) {
 
-                                    if (!isRepeatingSource(sources, matchIndex.getString("url"))) {
+                                    if (isUniqueSource(sources, matchIndex.getString("url"))) {
 
                                         Match match = new Match();
 
@@ -55,9 +57,9 @@ public class ParseEdamam extends ParseSuper {
 
                                         JSONArray ingredientLines = matchIndex.getJSONArray("ingredientLines");
 
-                                        for (int j = 0; j < ingredientLines.length(); j++) {
+                                        for (int j = 0; j < ingredientLines.length(); j++)
                                             match.addIngredients(ingredientLines.get(j).toString());
-                                        }
+
 
                                         this.matchCount++;
                                         this.matches.add(match);
