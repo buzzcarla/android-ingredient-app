@@ -1,7 +1,9 @@
 package com.emmanbraulio.final_thesis2.imgProcess;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.ProgressDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
@@ -17,6 +19,7 @@ import android.widget.TextView;
 
 import com.emmanbraulio.final_thesis2.Parsing.ShowIngredientsActivity;
 import com.emmanbraulio.final_thesis2.R;
+import com.emmanbraulio.final_thesis2.cameraOperation.Camera.CameraManager;
 
 import org.opencv.android.OpenCVLoader;
 import org.opencv.android.Utils;
@@ -39,10 +42,9 @@ public class ImgProcessManager extends Activity {
     private Mat mEdgeDetect;
     private ProgressDialog progressDialog;
 
-    Intent intent;
     public final static String EXTRA_MESSAGE = "com.example.kelvs.parsing";
 
-    private String[] processResult = new String[3];
+    private String processResult;
     /*Initialize OpenCV*/
     static {
         if(!OpenCVLoader.initDebug()) {
@@ -78,9 +80,21 @@ public class ImgProcessManager extends Activity {
          *
          */
         BitmapFactory.Options options = new BitmapFactory.Options();
-        options.inPreferredConfig = Bitmap.Config.ARGB_8888;
-        Intent intent = getIntent();
+        options.inPreferredConfig = Bitmap.Config.ARGB_8888;Intent intent = getIntent();
+        Bitmap bp = intent.getParcelableExtra("BitmapCaptured");
+
+        if(bp != null) {
+            Log.i("Bitmap received", "not null");
+            processResult = startProcess(bp);
+            TextView my_out_1 = (TextView) findViewById(R.id.my_out);
+            my_out_1.setText(processResult);
+        }
+
+        else
+            Log.i("Bitmap received", "null");
+        /*Intent intent = getIntent();
         final Bitmap bp1;
+        /*
         final Bitmap bp2;
         final Bitmap bp3;
         int count = intent.getIntExtra("InputIMG",0);
@@ -102,10 +116,14 @@ public class ImgProcessManager extends Activity {
                     break;
             default: Log.e("BITMAP COUNT", "ERROR");
         }
+        */
+        /*
+        bp1 = (Bitmap) intent.getParcelableExtra("BitmapCaptured");
+        processResult[0] = startProcess(bp1);
 
         TextView my_out_1 = (TextView) findViewById(R.id.my_out);
-        my_out_1.setText(processResult[0] + "\n" + processResult[1] + "\n" + processResult[2]);
-
+        my_out_1.setText(processResult[0]);
+        */
         //Bitmap bp = BitmapFactory.decodeFile(PhotoHandler.filename, options);
         //Bitmap bp = BitmapFactory.decodeFile(Environment.getExternalStorageDirectory().toString()+"/tessdata/book2.jpg", options);
         /****************************OPEN BITMAP FROM OTHER ACTIVITY******************************************************************/
@@ -115,15 +133,36 @@ public class ImgProcessManager extends Activity {
         bp = BitmapFactory.decodeFile(file.getAbsolutePath(), options);
         bp = Bitmap.createScaledBitmap(bp, bp.getWidth(), bp.getHeight(), true);*/
         //Log.v(TAG, text);
-        String lines[] = processResult[0].split("\\r?\\n");
+        //String lines[] = processResult.split("\\r?\\n");
 
-        /*SEND TO PARSING*/
-        intent = new Intent(this, ShowIngredientsActivity.class);
-        for(int x = 0; x < lines.length ; x++){
-            Log.v("RECIPE", lines[x]);
-            intent.putExtra(EXTRA_MESSAGE, lines[x]);
-            startActivity(intent);
-        }
+        AlertDialog.Builder showDelete = new AlertDialog.Builder(this);
+        showDelete.setTitle("Recognized Dishes")
+                .setMessage(processResult+"\nWould you like to retake the photo?")
+                .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                    //YES
+                        Intent intent = new Intent(ImgProcessManager.this, CameraManager.class);
+                        startActivity(intent);
+                    }
+                })
+                .setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        //do nothing
+                        /*SEND TO PARSING*/
+                        String lines[] = processResult.split("\\r?\\n");
+                        Intent intent = new Intent(ImgProcessManager.this, ShowIngredientsActivity.class);
+                        for(int x = 0; x < lines.length ; x++){
+                            Log.v("RECIPE", lines[x]);
+                            intent.putExtra(EXTRA_MESSAGE, lines[x]);
+                            startActivity(intent);
+                        }
+                    }
+                })
+                .setIcon(android.R.drawable.ic_dialog_alert)
+                .show();
+
     }
 
     private String startProcess(Bitmap bp)
